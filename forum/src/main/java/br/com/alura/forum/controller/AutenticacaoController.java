@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.alura.forum.controller.dto.TokenDto;
 import br.com.alura.forum.controller.form.LoginForm;
 /**
  * 
@@ -37,8 +38,13 @@ public class AutenticacaoController {
 	@Autowired
 	private TokenService tokenService;
 	
+	/**
+	 * 
+	 * Gerar token 
+	 */
+	
 	@PostMapping
-	public ResponseEntity<?> autenticar(@RequestBody @Valid LoginForm form){
+	public ResponseEntity<TokenDto> autenticar(@RequestBody @Valid LoginForm form){
 		/**
 		 * SÓ PARA VERIFICAR SE ESTÁ CHEGANDO DIREITINHO AS SENHA
 		 * System.out.println(form.getEmail());
@@ -60,13 +66,13 @@ public class AutenticacaoController {
 			
 			Authentication authentication = authManager.authenticate(dadosLogin);
 			String token = tokenService.gerarToken(authentication);
-			System.out.println(token);
+			return ResponseEntity.ok(new TokenDto(token, "Bearer"));
 			
 		}catch(AuthenticationException e) {
 			return ResponseEntity.badRequest().build();
 		}
 		
-		return ResponseEntity.ok().build();
+		
 		
 	}
 	

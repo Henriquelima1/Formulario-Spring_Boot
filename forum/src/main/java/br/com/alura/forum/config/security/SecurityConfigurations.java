@@ -12,6 +12,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import br.com.alura.forum.repository.UsuarioRepository;
 
 /**
  * 
@@ -31,6 +34,12 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private AutenticacaoService autenticacaoService;
+	
+	@Autowired
+	private TokenService tokenService;
+	
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 	
 	
 	/**
@@ -80,6 +89,9 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 		.antMatchers(HttpMethod.GET, "/topicos/*").permitAll()
 		// A URL DE LOGIN(auth) TEM QUE ESTAR LIBERADA SENÃO O USUARIO NÃO CONSEGUE NEM LOGAR NO SISTEMA
 		.antMatchers(HttpMethod.POST, "/auth").permitAll()
+		// A URL DE MONITORAMENTO TEM QUE ESTAR LIBERADA SENÃO, NÃO CONSEGUIMOS VISUALIZAR O ESTADO DO PROGRAMA 
+		//PARA FIM DE TESTES VAMOS COLOCAR "permitAll"  NÃO É LEGAL DEIXAR ISSO LIBERADO
+		.antMatchers(HttpMethod.GET, "/actuator/**").permitAll()
 		//".anyRequest().authenticated()" ASSIM QUALQUER OUTRA REQUISIÇÃO TEM QUE ESTAR AUTENTICADA 
 		.anyRequest().authenticated()
 		/**
@@ -100,6 +112,20 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	 *  O "SPRING SECURITY" QUE NO NOSSO PROJETO QUANDO FIZERMOS AUTENTICAÇÃO, NÃO É PARA CRIAR SESSÃO
 	 */
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		
+		/**
+		 * vou colocar mais uma sentença, o addFilter. Só que não posso chamar isso, 
+		 * porque o Spring internamente já tem o filtro de autenticação. Ele precisa saber qual a ordem dos filtros, 
+		 * quem vem antes. Por isso, tem que ser o método addFilterBefore.
+		 *  Passo para ele quem é o filtro que quero adicionar e antes de quem esse filtro virá. Depois, 
+		 *  damos um new AutenticacaoViaTokenFilter(), UsernamePasswordAuthenticationFilter.class. 
+		 *  Esse é o token que já tem no Spring por padrão. Vou falar para o nosso filtro rodar antes dele. 
+		 */
+		//
+		/**
+		 * Ele está só reclamando porque o método isTokenValido não existe. Temos que criar.
+		 */
+		//.and().addFilterBefore(new AutenticacaoViaTokenFilter(tokenService, usuarioRepository), UsernamePasswordAuthenticationFilter.class);
 		
 	}
 	//Configurações de recursos estaticos(js, css, imagens, etc..)
